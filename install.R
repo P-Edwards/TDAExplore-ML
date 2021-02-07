@@ -55,10 +55,10 @@ if(copy_to_path) {
 	} else { 
 		# Need to add TDAExplore to PATH on Windows
 		if(.Platform$OS.type=="windows") { 
-			shell(paste('setx PATH "',current_path,'"'))
+			shell(paste('setx PATH "',noramlizePath(current_path),'"'))
 		}
 	}
-	if(!dir.exists(file.path(current_path))) { dir.create(normalizePath(current_path),showWarnings=FALSE) }
+	if(!dir.exists(normalizePath(current_path))) { dir.create(normalizePath(current_path),showWarnings=FALSE) }
 	
 	# Make sure the scripts are executable and copy everything
 	if(!(.Platform$OS.type=="windows")) { 
