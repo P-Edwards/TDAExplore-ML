@@ -29,7 +29,7 @@ packages_to_install <- c("TDAExplore")
 new.packages <- packages_to_install[!(packages_to_install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) { 
 	if(.Platform$OS.type== "windows") { 
-		devtools::install_url("https://notredame.box.com/shared/static/sn7hbkpfxdkx5z3kc0a9e384cyxb16bj.zip")
+		install.packages("https://dl.dropboxusercontent.com/s/4h3d8ghvhkjmthn/TDAExplore.zip",repos=NULL)
 	} else { 
 		devtools::install_github("P-Edwards/TDAExplore")
 	}
@@ -41,7 +41,7 @@ cat(" \n \n")
 
 if(copy_to_path) { 
 	if(.Platform$OS.type=="windows") { 
-		current_path <- file.path(Sys.getenv("%ProgramFiles%"),"TDAExplore")
+		current_path <- file.path(Sys.getenv("ProgramFiles"),"TDAExplore")
 		ml_executable <- "ml-tda.bat"
 		convolve_executable <- "convolve-tda.bat"
 	} else { 
