@@ -3,4 +3,4 @@
 MYDIR="$(dirname "$(readlink -f "$0")")"
 RUNFILE="$MYDIR/convolve_images.R"
 
-Rscript $RUNFILE ${@:1}
+Rscript.exe $RUNFILE ${@:1}
