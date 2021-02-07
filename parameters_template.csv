@@ -1,0 +1,3 @@
+experiment_name,image_directories,directory_classes,radius_of_patches,number_of_cores,image_results_directory,data_results_directory
+Gene_rescues_whole_kovctrl_sparse_200disc,/blue/bubenik/pedwards/vitriol_analysis/data/gene/ctrl/whole,Control,75,32,results_images,results_rdata
+,/blue/bubenik/pedwards/vitriol_analysis/data/gene/ko/whole,Knockout,,,,

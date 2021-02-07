@@ -1,0 +1,6 @@
+#!/bin/bash
+
+MYDIR="$(dirname "$(readlink -f "$0")")"
+RUNFILE="$MYDIR/landscapes_and_ML.R"
+
+Rscript $RUNFILE ${@:1}
