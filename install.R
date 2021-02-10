@@ -1,15 +1,10 @@
 
 # Base packages
-base_packages <- c("devtools","optparse", "LiblineaR","colorspace","ggplot2","gridExtra","ggplotify")
+base_packages <- c("devtools","optparse", "LiblineaR","colorspace","ggplot2","gridExtra","ggplotify","svglite")
 
-# Extra packages
-extra_packages <- c("RSpectra","randomForest","doMC")
 
 # Dependency packages for Windows users
 windows_base_packages <- c("Rcpp","methods","foreach","doParallel","TDA","iterators","SparseM","OpenImageR","rdist")
-
-want_extra <- utils::askYesNo("Do you want to install extra libraries for random forest/PCA?",default=FALSE)
-writeLines(" \n")
 
 if(.Platform$OS.type == "windows") { 
 	packages_to_install <- c(base_packages,windows_base_packages)
@@ -18,9 +13,6 @@ if(.Platform$OS.type == "windows") {
 	packages_to_install <- base_packages
 }
 
-if(want_extra) { 
-	packages_to_install <- c(packages_to_install,extra_packages)
-} 
 
 new.packages <- packages_to_install[!(packages_to_install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) { install.packages(new.packages) }

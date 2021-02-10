@@ -10,4 +10,4 @@ set params=%params% %1
 goto loop
 :afterloop
 
-Rscript "%filedir%\landscapes_and_ML.R" %params%
+Rscript.exe "%filedir%\landscapes_and_ML.R" %params%

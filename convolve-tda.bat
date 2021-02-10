@@ -10,4 +10,4 @@ set params=%params% %1
 goto loop
 :afterloop
 
-Rscript "%filedir%\convolve_images.R" %params%
+Rscript.exe "%filedir%\convolve_images.R" %params%
