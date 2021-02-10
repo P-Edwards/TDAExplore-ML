@@ -17,14 +17,10 @@ if(.Platform$OS.type == "windows") {
 new.packages <- packages_to_install[!(packages_to_install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) { install.packages(new.packages) }
 
-packages_to_install <- c("TDAExplore")
-new.packages <- packages_to_install[!(packages_to_install %in% installed.packages()[,"Package"])]
-if(length(new.packages)) { 
-	if(.Platform$OS.type== "windows") { 
-		install.packages("https://dl.dropboxusercontent.com/s/4h3d8ghvhkjmthn/TDAExplore.zip",repos=NULL)
-	} else { 
-		devtools::install_github("P-Edwards/TDAExplore")
-	}
+if(.Platform$OS.type== "windows") { 
+	install.packages("https://dl.dropboxusercontent.com/s/8op96gcs3hr3ir1/TDAExplore_1.0.0.0.zip",repos=NULL)
+} else { 
+	devtools::install_github("P-Edwards/TDAExplore")
 }
 
 # Can put copies of shell scripts somewhere in the path, if desired

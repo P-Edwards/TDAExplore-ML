@@ -1,8 +1,7 @@
 @echo off
 rem throw the first parameter away
 set filedir=%~dp0
-shift
-set params=%0
+set params=%1
 :loop
 shift
 if [%1]==[] goto afterloop
