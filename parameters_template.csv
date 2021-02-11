@@ -1,3 +1,3 @@
-experiment_name,image_directories,directory_classes,radius_of_patches,image_results_directory,data_results_directory
-inner_vs_outer,example_data/inners,Inner,75,results_images,results_rdata
-,example_data/outers,Outer,,,
+experiment_name,image_directories,directory_classes,radius_of_patches,data_results_directory
+inner_vs_outer,example_data/inners,Inner,75,results_rdata
+,example_data/outers,Outer,,

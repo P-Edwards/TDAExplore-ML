@@ -18,7 +18,7 @@ new.packages <- packages_to_install[!(packages_to_install %in% installed.package
 if(length(new.packages)) { install.packages(new.packages) }
 
 if(.Platform$OS.type== "windows") { 
-	install.packages("https://dl.dropboxusercontent.com/s/8op96gcs3hr3ir1/TDAExplore_1.0.0.0.zip",repos=NULL)
+	install.packages("https://dl.dropboxusercontent.com/s/2vymw7rqn4ud9ei/TDAExplore_1.0.0.0.zip",repos=NULL)
 } else { 
 	devtools::install_github("P-Edwards/TDAExplore")
 }

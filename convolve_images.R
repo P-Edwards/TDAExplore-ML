@@ -14,7 +14,7 @@ option_list <- list(make_option(c("--training"),type="character",default="",help
                     make_option(c("--list"),type="character",default=NULL,help="Path to single column .csv file listing paths to images."),
                     make_option(c("--centersfolders"),type="character",default=NULL,help="Comma separated list of directories containing images from which to sample patch centers in convolution."),
                     make_option(c("--centerslist"),type="character",default=NULL,help="Path to single column .csv file listing paths to images for centers."),                    
-                    make_option(c("--directory"),type="character",default="",help="Path to directory where results should be saved. Default is ./tda-explore-convolutions."),
+                    make_option(c("--directory"),type="character",default=NULL,help="Path to directory where results should be saved. Default is ./tda-explore-convolutions."),
                     make_option(c("--name"),type="character",default=NULL,help="Base name for saved images. Default is name stem from training RData file."),
                     make_option(c("--svm"),type="character",default=FALSE,help="If non-0, convolves images using SVM classifier."),
                     make_option(c("--tsne"),type="character",default=FALSE,help="If non-0, convolves images using TSNE scores from input images."),
@@ -62,7 +62,6 @@ if(!is.null(opt$centerslist)) {
 }
 
 number_of_images <- length(list_of_images_to_mask)
-if(opt$negate!=0) {print("NEGATIVE")}
 
 if(opt$training!="") { 
   ml_environment <- local({load(opt$training);environment()})
@@ -95,7 +94,12 @@ apply_tsne <- function(data_matrix) {
 convolution_runs <- list() 
 
 if(opt$svm!=FALSE) { 
-  convolution_runs$svm <- list("func"=svm_rotation_for_convolution,name="svm_","first_class"=unique(ml_environment$training_results$class_names)[1],"second_class"=unique(ml_environment$training_results$class_names)[2])
+  convolution_runs$svm <- list("func"=svm_rotation_for_convolution,name="svm_","first_class"=unique(ml_environment$training_results$class_names)[2],"second_class"=unique(ml_environment$training_results$class_names)[1])
+  if(opt$negate!=0) { 
+    temp <- convolution_runs$svm$first_class
+    convolution_runs$svm$first_class <- convolution_runs$svm$second_class
+    convolution_runs$svm$second_class <- temp
+  }
 }
 
 if(opt$tsne!=FALSE) { 

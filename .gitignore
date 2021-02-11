@@ -1,0 +1,6 @@
+example_data/*
+results_rdata/*
+tda-explore-plots/*
+tda-explore-convolutions/*
+.ipynb_checkpoints/*
+Rplots.pdf
