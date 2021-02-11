@@ -1,6 +1,6 @@
 
 # Base packages
-base_packages <- c("devtools","optparse", "LiblineaR","colorspace","ggplot2","gridExtra","ggplotify","svglite")
+base_packages <- c("devtools","optparse", "LiblineaR","colorspace","ggplot2","gridExtra","ggplotify","svglite","Rtsne")
 
 
 # Dependency packages for Windows users
