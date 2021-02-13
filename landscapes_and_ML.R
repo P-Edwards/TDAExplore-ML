@@ -16,7 +16,7 @@ opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
 
 if(opt$landscapes!="FALSE") { 
   training_results <- TDAExplore::TDAExplore(parameters=opt$parameters,number_of_cores=opt$cores,radius_of_patches=opt$radius,patch_ratio=opt$ratio,svm=opt$svm,lower=opt$lower,upper=opt$upper,verbose=TRUE,benchmark=opt$benchmark)  
-  save(training_results,version=2,file=file.path(training_results$data_results_directory,paste(training_results$data_name_stem,"_ML_results_and_summaries.RData",sep="")))
+  save(training_results,version=2,file=file.path(training_results$data_results_directory,paste(training_results$data_name_stem,".RData",sep="")))
 }
 
 if(opt$plot!=FALSE) { 

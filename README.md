@@ -33,7 +33,7 @@ source("install.R")
 
 On Windows you will need to add `R.exe` and `Rscript.exe` to your PATH to run the batch scripts properly. See [here](https://cran.r-project.org/bin/windows/base/rw-FAQ.html#Rcmd-is-not-found-in-my-PATH_0021) for instructions.
 
-On Linux several of the R package dependencies of TDAExplore-ML require that your system has certain C/C++ libraries installed. The links below are to appropriate Ubuntu packages to highlight the correct library. This list is not exhaustive: recursive package requirements may requirem more libraries. If library installations throw such an error, search through the logs for the right library, install it, then rerun the TDAExplore-ML install script.
+On Linux several of the R package dependencies of TDAExplore-ML require that your system has certain C/C++ libraries installed. The links below are to appropriate Ubuntu packages to highlight the correct library. This list is not exhaustive: recursive package requirements may require more libraries. If library installations throw such an error, search through the logs for the right library, install it, then rerun the TDAExplore-ML install script.
 
 * [libtiff-dev](https://packages.ubuntu.com/search?keywords=libtiff-dev)
 * [libgmp-dev](https://packages.ubuntu.com/search?keywords=libgmp-dev)
