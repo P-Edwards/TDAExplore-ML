@@ -38,7 +38,7 @@ if(copy_to_path) {
 		convolve_executable <- "convolve-tda"
 	}
 	new_path <- readline(prompt=paste("Install script copies to: (leave blank for default ",current_path,") "))
-	if(length(new_path)>1) { 
+	if(nchar(new_path)>0) { 
 		current_path <- new_path
 	} else { 
 		# Need to add TDAExplore to PATH on Windows

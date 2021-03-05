@@ -16,17 +16,31 @@ option_list <- list(make_option(c("--training"),type="character",default="",help
                     make_option(c("--centerslist"),type="character",default=NULL,help="Path to single column .csv file listing paths to images for centers."),                    
                     make_option(c("--directory"),type="character",default=NULL,help="Path to directory where results should be saved. Default is ./tda-explore-convolutions."),
                     make_option(c("--name"),type="character",default=NULL,help="Base name for saved images. Default is name stem from training RData file."),
-                    make_option(c("--svm"),type="character",default=FALSE,help="If non-0, convolves images using SVM classifier."),
-                    make_option(c("--tsne"),type="character",default=FALSE,help="If non-0, convolves images using TSNE scores from input images."),
+                    make_option(c("--svm"),type="character",default=FALSE,help="If TRUE, convolves images using SVM classifier. Default FALSE."),
+                    make_option(c("--tsne"),type="character",default=FALSE,help="If TRUE, convolves images using TSNE scores from input images. Default FALSE."),
+                    make_option(c("--lines"),type="character",default=FALSE,help="If TRUE, also computes \"line scan\" representatives for images. Default FALSE."),
                     make_option(c("--patches"),type="numeric",default=0,help="Number of patches to use per image. Defaults to number from training RData file."),
                     make_option(c("--radius"),type="numeric",default=NULL,help="Radius for patches. Defaults to radius from training file."),
                     make_option(c("--cores"),type="numeric",default=1,help="Number of cores to use for parallelized portions."), 
                     make_option(c("--threshold"),type="numeric",default=100,help="Percentage T between 0 and 100. Only the top T percent of mask values will be displayed."),
-                    make_option(c("--negate"),type="numeric",default=FALSE,help="If not FALSE flip positive and negative scores."),
-                    make_option(c("--separate"),type="character",default=FALSE,help="If 1, output separate images for each input. If 0, masks will be in a single image file."))
+                    make_option(c("--negate"),type="numeric",default=FALSE,help="If TRUE, flip positive and negative scores. Default FALSE."),
+                    make_option(c("--separate"),type="character",default=TRUE,help="If TRUE, output separate images for each input. If FALSE, masks will be in a single image file. Default FALSE."))
 opt <- parse_args(OptionParser(option_list=option_list))
 
-real_opt <- opt
+replace_falsy_with_false <- function(flag_to_check) { 
+  list_of_falsy_objects <- c(FALSE,"FALSE",0,"False","no","No","F","f")
+  for(entry in list_of_falsy_objects) { 
+    if(flag_to_check==entry) { 
+      return(FALSE)
+    }
+  }
+  return(TRUE)
+}
+
+options_to_falsify <- c("svm","tsne","negate","separate","lines")
+for(command_line_option in options_to_falsify) { 
+  opt[command_line_option]  <- replace_falsy_with_false(opt[command_line_option])
+}
 
 if(!is.null(opt$image)) { 
   list_of_images_to_mask <- list(opt$image)
@@ -179,7 +193,7 @@ for(run in convolution_runs) {
   `%dopar%` <- foreach::`%dopar%`  
   convolution_data <- foreach::foreach(image_summary=image_summaries,.packages=c("TDAExplore","SparseM"),.combine=c,.multicombine=TRUE) %dopar% { 
     options(warn=-1)
-    convolution_data <- TDAExplore::weight_image_using_landscapes_and_transform(image_summary$name,image_summary$data,image_summary$patches,patch_radius,run$func(model_vector),min_weight=scale_min,max_weight=scale_max)
+    convolution_data <- TDAExplore::weight_image_using_landscapes_and_transform(image_summary$name,image_summary$data,image_summary$patches,patch_radius,run$func(model_vector),min_weight=scale_min,max_weight=scale_max,interval_rep=opt$lines)
     convolution_data$name <- image_summary$name
     convolution_data$type <- paste(run$name,unlist(strsplit(as.character(image_summary$name),"/"))[7],sep="")
     return(list(convolution_data))
@@ -232,7 +246,7 @@ for(run in convolution_runs) {
       image_grobs[[i]] <- as.grob(function() {
         par(mar=c(0,0,0,0));  
         image(convolution_data[[i]]$image,col=c("#00000000"),zlim=c(0,max(convolution_data[[i]]$image)),axes=FALSE)
-        image(convolution_data[[i]]$image,col=gray.colors(70000,start = 0.0),zlim=c(0.1,max(convolution_data[[i]]$image)),axes=FALSE,add=TRUE)    
+        image(convolution_data[[i]]$image,col=gray.colors(70000,start = 0.0),zlim=c(1e-3,max(convolution_data[[i]]$image)),axes=FALSE,add=TRUE)    
         image(convolution_data[[i]]$mask,zlim=c(-max_value,max_value),col=divergingx_hcl(number_of_colors_for_breakpoints,palette = "RdBu",alpha=.60,rev=FALSE),add=TRUE)
       })
       # Note drop=FALSE and nmax = number of breakpoints are required to keep histograms on same color scale
@@ -245,7 +259,7 @@ for(run in convolution_runs) {
         png(file.path(image_results_directory,paste('mask_plot_',run$name,"_",data_name_stem,i,'.png',sep="")),bg="transparent",height=nrow(convolution_data[[i]]$mask),width=ncol(convolution_data[[i]]$mask))
         par(mar=c(0,0,0,0));  
         image(convolution_data[[i]]$image,col=c("#00000000"),zlim=c(0,max(convolution_data[[i]]$image)),axes=FALSE)
-        image(convolution_data[[i]]$image,col=gray.colors(70000,start = 0.0),zlim=c(0.1,max(convolution_data[[i]]$image)),axes=FALSE,add=TRUE)
+        image(convolution_data[[i]]$image,col=gray.colors(70000,start = 0.0),zlim=c(1e-3,max(convolution_data[[i]]$image)),axes=FALSE,add=TRUE)
         image(convolution_data[[i]]$mask,zlim=c(-max_value,max_value),col=divergingx_hcl(number_of_colors_for_breakpoints,palette = "RdBu",alpha=.60,rev=FALSE),add=TRUE)
         dev.off()
         png(file.path(image_results_directory,paste('hist_plot_',run$name,data_name_stem,i,'.png',sep="")),height=nrow(convolution_data[[i]]$mask)/2,width=ncol(convolution_data[[i]]$mask))
