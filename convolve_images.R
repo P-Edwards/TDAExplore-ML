@@ -19,6 +19,7 @@ option_list <- list(make_option(c("--training"),type="character",default="",help
                     make_option(c("--svm"),type="character",default=FALSE,help="If TRUE, convolves images using SVM classifier. Default FALSE."),
                     make_option(c("--tsne"),type="character",default=FALSE,help="If TRUE, convolves images using TSNE scores from input images. Default FALSE."),
                     make_option(c("--lines"),type="character",default=FALSE,help="If TRUE, also computes \"line scan\" representatives for images. Default FALSE."),
+                    make_option(c("--classes"),type="character",default=FALSE,help="A comma separated list of class names, one for each directory in --folders, to use for line scan plots. Optional."),
                     make_option(c("--patches"),type="numeric",default=0,help="Number of patches to use per image. Defaults to number from training RData file."),
                     make_option(c("--radius"),type="numeric",default=NULL,help="Radius for patches. Defaults to radius from training file."),
                     make_option(c("--cores"),type="numeric",default=1,help="Number of cores to use for parallelized portions."), 
@@ -47,14 +48,29 @@ if(!is.null(opt$image)) {
 } else if(!is.null(opt$list)) {
   list_of_images_to_mask <- as.list(read.csv(opt$list,header=FALSE)[,1])
 } else if(!is.null(opt$folders)) { 
-  list_of_folders <- strsplit(opt$folders,",")
+  list_of_folders <- strsplit(opt$folders,",")[[1]]
+  if(opt$classes!=FALSE) { 
+    list_of_classes <- strsplit(opt$classes,",")[[1]]
+    if(length(list_of_folders)!=length(list_of_classes)) { 
+      stop("Different number of folders and class names provided.")
+    }
+  } else { 
+    # Default: uses directory name as a class name
+    list_of_classes <- vector("character",length(list_of_folders))
+    for(i in 1:length(list_of_folders)) { 
+      list_of_classes[i] <- basename(list_of_folders[[i]])
+    }
+  }
   file_names <- list()
+  file_classes <- list()
   i <- 1
   for(folder in list_of_folders) {
     file_names[[i]] <- list.files(folder,full.names=TRUE)
+    file_classes[[i]] <- rep(list_of_classes[i],length(file_names[[i]]))
     i <- i+1
   }
   list_of_images_to_mask <- unlist(file_names,recursive=TRUE)
+  list_of_image_classes <- unlist(file_classes)
 }
 if(!is.null(opt$centerslist)) { 
   centers_list <- as.list(read.csv(opt$centerslist,header=FALSE)[,1])
@@ -63,7 +79,6 @@ if(!is.null(opt$centerslist)) {
   }
 } else if(!is.null(opt$centersfolders)) { 
     list_of_folders <- strsplit(opt$centersfolders,",")
-    print(list_of_folders)
     file_names <- list()
     i <- 1
     for(folder in list_of_folders) {
@@ -74,6 +89,12 @@ if(!is.null(opt$centerslist)) {
     centers_list <- list()
     centers_list[1:length(list_of_images_to_mask)] <- FALSE
 }
+if(opt$lines) { 
+  if(is.null(opt$folders)) { 
+    stop("Images must be provided via directories for line scan plotting.")
+  }
+}
+
 
 number_of_images <- length(list_of_images_to_mask)
 
@@ -277,7 +298,44 @@ for(run in convolution_runs) {
     grid.arrange(grobs=c(image_grobs,hist_plots),layout_matrix=layout,padding=unit(0.0,"null"))
     dev.off()
   } 
+  if(opt$lines) { 
+    interval_reps <- matrix(nrow=0,ncol=length(convolution_data[[1]]$interval_rep))
+    for(i in 1:length(convolution_data)) { 
+      interval_reps <- rbind(interval_reps,convolution_data[[i]]$interval_rep)
+    }
+
+    image_classes <- unique(list_of_image_classes)
+    x_values <- rep(1:length(interval_reps[1,]),length(image_classes))
+    y_mean_values <- vector() 
+    y_sd_values <- vector() 
+    expanded_groups <- vector()
+    lineError <- function(input_column){sd(input_column)/sqrt(length(input_column))}
+    apply_sd <- function(input_data) { 
+      return(apply(input_data,2,lineError)) 
+    } 
+    for(name in image_classes) { 
+        this_class_data <- interval_reps[which(list_of_image_classes==name,arr.ind=TRUE),]
+        y_mean_values <- c(y_mean_values,colMeans(this_class_data))
+        y_sd_values <- c(y_sd_values,apply_sd(this_class_data))
+        expanded_groups <- c(expanded_groups,rep(name,ncol(this_class_data)))
+    }
+    #plot as distance from leading edge, "group" refers to experimental groupings such as control or KO
+    line_data <- data.frame(X=2*x_values,Y=y_mean_values,sd=y_sd_values,Class=expanded_groups)
+    line_plot <- ggplot(line_data,aes(x=X, y=Y,group=Class)) + 
+      geom_line(aes(color=Class), size=2.0)+
+      theme_bw() +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),text=element_text(size=14)) +
+      ylab("Average topological score") +
+      xlab("% Distance from center")
+    line_plot <- line_plot + 
+      geom_ribbon(aes(ymin=Y-sd,ymax=Y+sd,fill=Class,alpha=0.1),show.legend=FALSE) 
+    png(file.path(image_results_directory,paste('line_plot',run$name,data_name_stem,i,'.png',sep="")),height=740,width=1280)
+    print(line_plot)
+    dev.off()
+  }
 }
+
+
 
 
 data_file_name <- paste(data_name_stem,".RData",sep="")
