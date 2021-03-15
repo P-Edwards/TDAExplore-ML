@@ -24,7 +24,7 @@ option_list <- list(make_option(c("--training"),type="character",default="",help
                     make_option(c("--radius"),type="numeric",default=NULL,help="Radius for patches. Defaults to radius from training file."),
                     make_option(c("--cores"),type="numeric",default=1,help="Number of cores to use for parallelized portions."), 
                     make_option(c("--threshold"),type="numeric",default=100,help="Percentage T between 0 and 100. Only the top T percent of mask values will be displayed."),
-                    make_option(c("--negate"),type="numeric",default=FALSE,help="If TRUE, flip positive and negative scores. Default FALSE."),
+                    make_option(c("--negate"),type="character",default=FALSE,help="If TRUE, flip positive and negative scores. Default FALSE."),
                     make_option(c("--separate"),type="character",default=TRUE,help="If TRUE, output separate images for each input. If FALSE, masks will be in a single image file. Default FALSE."))
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -78,7 +78,7 @@ if(!is.null(opt$centerslist)) {
     centers_list[[i]] <- as.character(centers_list[[i]])
   }
 } else if(!is.null(opt$centersfolders)) { 
-    list_of_folders <- strsplit(opt$centersfolders,",")
+    list_of_folders <- strsplit(opt$centersfolders,",")[[1]]
     file_names <- list()
     i <- 1
     for(folder in list_of_folders) {
@@ -309,13 +309,13 @@ for(run in convolution_runs) {
     y_mean_values <- vector() 
     y_sd_values <- vector() 
     expanded_groups <- vector()
-    lineError <- function(input_column){sd(input_column)/sqrt(length(input_column))}
+    lineError <- function(input_column){sd(input_column,na.rm=TRUE)/sqrt(sum(!is.na(input_column)))}
     apply_sd <- function(input_data) { 
       return(apply(input_data,2,lineError)) 
     } 
     for(name in image_classes) { 
         this_class_data <- interval_reps[which(list_of_image_classes==name,arr.ind=TRUE),]
-        y_mean_values <- c(y_mean_values,colMeans(this_class_data))
+        y_mean_values <- c(y_mean_values,colMeans(this_class_data,na.rm=TRUE))
         y_sd_values <- c(y_sd_values,apply_sd(this_class_data))
         expanded_groups <- c(expanded_groups,rep(name,ncol(this_class_data)))
     }

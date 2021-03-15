@@ -10,8 +10,8 @@ option_list <- list(optparse::make_option(c("--parameters"),type="character",hel
                     optparse::make_option(c("--imagedir"),type="character",default=FALSE,help="Path to directory in which to save plots. Default is ./tda-explore-plots."),
                     optparse::make_option(c("--lower"),type="numeric",default=0,help="Experimental. Minimum percentage distance from centroid for patches."),
                     optparse::make_option(c("--upper"),type="numeric",default=1,help="Experimental. Maximum percentage distance from centroid for patches."),
-                    optparse::make_option(c("--fullsave"),type="numeric",default=FALSE,help="Debugging. If flag is set to TRUE then uses save.image at end. Default FALSE."),
-                    optparse::make_option(c("--benchmark"),type="numeric",default=FALSE,help="Debugging. If TRUE, uses a fork based cluster type for benchmarking. Does not work on Windows."))
+                    optparse::make_option(c("--fullsave"),type="character",default=FALSE,help="Debugging. If flag is set to TRUE then uses save.image at end. Default FALSE."),
+                    optparse::make_option(c("--benchmark"),type="character",default=FALSE,help="Debugging. If TRUE, uses a fork based cluster type for benchmarking. Does not work on Windows."))
 opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
 
 
@@ -43,7 +43,7 @@ if(opt$plot!=FALSE) {
   } else { 
     summaries_results <- training_results 
   }
-
+  
   if(opt$training!=FALSE) { 
     extract <- local({load(opt$training);environment()})
     training_results <- extract$training_results
@@ -53,7 +53,7 @@ if(opt$plot!=FALSE) {
   if(is.null(training_results$svm)) { 
     stop("There is no SVM training from the current run or from --training tag.")
   }
-
+  
   apply_patch_svm_rotation <- function(data_matrix,labels,classifier=1) { 
     rval <- list()
     model_matrix <- training_results$svm[[classifier]]$patch_svm_model$W
@@ -72,12 +72,12 @@ if(opt$plot!=FALSE) {
   apply_image_svm_rotation <- function(data_matrix,classifier=1) { 
     model_matrix <- training_results$svm[[classifier]]$image_svm_model$W
     weight_vector <- model_matrix[1,(1:(dim(model_matrix)[2]-1))]
-      bias_term <- model_matrix[1,dim(model_matrix)[2]]
-      return(data_matrix%*%(weight_vector)+bias_term)
+    bias_term <- model_matrix[1,dim(model_matrix)[2]]
+    return(data_matrix%*%(weight_vector)+bias_term)
   }
-
+  
   identity <- function(x) {return(x)}
-
+  
   average_by_image <- function(data_matrix,transformation_map,max_dim=1,post_transformation_map=identity) { 
     rval <- list()
     transformed_data <- transformation_map(data_matrix) 
@@ -91,15 +91,15 @@ if(opt$plot!=FALSE) {
     rval$axis_labels  <- transformed_data$axis_labels
     return(rval)
   }
-
-
+  
+  
   plotting_data <- list() 
-
-
-
-
+  
+  
+  
+  
   number_of_classifiers <- length(training_results$svm)
-
+  
   individual_results <- list()
   individual_image_results <- list()
   testing_order_image_names <- vector("character")
@@ -120,7 +120,7 @@ if(opt$plot!=FALSE) {
   
   full_plotting_result$name <- "Patch_SVM_scores"
   full_plotting_image_result$name <- "Image_SVM_scores"
-
+  
   full_plotting_result$data <- vector(mode="double")
   full_plotting_image_result$data <- vector(mode="double")
   full_plotting_result$types <- vector(mode="character")
@@ -142,8 +142,8 @@ if(opt$plot!=FALSE) {
   plotting_data$patches_svm <- full_plotting_result
   plotting_data$image_svm <- full_plotting_image_result
   
-
-
+  
+  
   library(ggplot2)
   if(opt$imagedir!=FALSE) { 
     image_results_directory <- file.path(opt$imagedir)
@@ -153,13 +153,13 @@ if(opt$plot!=FALSE) {
   if(!dir.exists(image_results_directory)) { 
     dir.create(image_results_directory)
   }
-
+  
   if(opt$summaries!=FALSE) { 
     plotting_name_stem <- paste(training_results$data_name_stem,"_training_applied_to_",summaries_results$data_name_stem,"_summaries",sep="")
   } else { 
     plotting_name_stem <- paste(training_results$data_name_stem,"_plots",sep="")
   }
-
+  
   for(plotting_details in plotting_data) { 
     if(is.null(plotting_details)) { next }
     if(plotting_details$dim == 1) { 
@@ -172,10 +172,10 @@ if(opt$plot!=FALSE) {
       ggsave(file.path(image_results_directory,paste('boxplot_',plotting_details$name,plotting_name_stem,'.svg',sep="")),width=15,height=10)
     } 
   }
-
+  
   if(opt$svm!=FALSE) {
     plotting_details <- plotting_data$image_svm
-    classes <- levels(summaries_results$class_names)
+    classes <- unique(plotting_details$named_types)
     classification_status <- vector("character",length=length(plotting_details$data))
     classification_name <- vector("character",length=length(plotting_details$data))
     for(i in 1:length(plotting_details$data)) {     
@@ -189,22 +189,18 @@ if(opt$plot!=FALSE) {
       } else { 
         classification_name[i] <- classes[2]
         if(plotting_details$named_types[i]==classes[2]) {
-         classification_status[i] <- "Correct"  
+          classification_status[i] <- "Correct"  
         } else {
           classification_status[i] <- "Incorrect"
         }
       }
     }
-    boxplot_image_data <- data.frame(features=plotting_details$data,types=plotting_details$named_types,testtypes=factor(classification_name),labelstatus=classification_status,replicate=plotting_data$image_svm$which_run)  
-    # Confusion matrices 
-    boxplot_data_for_confusion <- boxplot_image_data
-
-    boxplot_data_for_confusion[,"testtypes"] <- factor(boxplot_data_for_confusion[,"testtypes"],levels=rev(levels(boxplot_data_for_confusion[,"testtypes"])))
+    boxplot_data_for_confusion <- data.frame(features=plotting_details$data,types=plotting_details$named_types,testtypes=factor(classification_name,labels=levels(classes)),labelstatus=classification_status,replicate=plotting_data$image_svm$which_run)  
     actual_labels <- levels(boxplot_data_for_confusion[,"types"])
     levels(boxplot_data_for_confusion[,"types"]) <- c(paste("Actual ",actual_labels[1]),paste("Actual ",actual_labels[2]))
     predicted_labels <- levels(boxplot_data_for_confusion[,"testtypes"])
     levels(boxplot_data_for_confusion[,"testtypes"]) <- c(paste("Predicted ",predicted_labels[1]),paste("Predicted ",predicted_labels[2]))
-
+    
     base_confusion_matrix <- table(boxplot_data_for_confusion[,"testtypes"],boxplot_data_for_confusion[,"types"])
     if(actual_labels[1]!=predicted_labels[1]) {
       base_confusion_matrix <- base_confusion_matrix[,c(2,1)]
@@ -213,10 +209,10 @@ if(opt$plot!=FALSE) {
       accuracy <- 100*sum(diag(base_confusion_matrix))/sum(base_confusion_matrix)  
     }
     confusion_matrix <- as.data.frame(base_confusion_matrix[,c(2,1)])
-
+    
     p <- ggplot(data = confusion_matrix,
-           mapping = aes(x = Var1,
-                         y = Var2)) +
+                mapping = aes(x = Var1,
+                              y = Var2)) +
       geom_tile(aes(fill = Freq)) +
       geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1,size=10) +
       scale_fill_gradient(low = "blue",
@@ -227,15 +223,15 @@ if(opt$plot!=FALSE) {
     p
     ggsave(file.path(image_results_directory,paste(plotting_name_stem,"_confusion_matrix_.svg",sep="")),width=7,height=3.5)    
     image_file_names <- training_results$image_file_names
-    save(plotting_data,boxplot_image_data,image_file_names,testing_order_image_names,file=file.path(image_results_directory,paste(plotting_name_stem,".RData",sep="")),version=2)
+    save(plotting_data,boxplot_data_for_confusion,image_file_names,testing_order_image_names,file=file.path(image_results_directory,paste(plotting_name_stem,".RData",sep="")),version=2)
   } else { 
     save(plotting_data,file=file.path(image_results_directory,paste(plotting_name_stem,".RData",sep="")),version=2)
   }
 }
-  
+
 if(opt$fullsave) {
   data_file_name <- paste(training_results$data_name_stem,".RData",sep="")
-  save.image(file=file.path(data_results_directory,data_file_name),version=2)
+  save.image(file=file.path(training_results$data_results_directory,data_file_name),version=2)
 }
 
 
