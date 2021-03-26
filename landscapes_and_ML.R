@@ -177,6 +177,7 @@ if(opt$plot!=FALSE) {
   if(opt$svm!=FALSE) {
     plotting_details <- plotting_data$image_svm
     classes <- unique(plotting_details$named_types)
+    classes <- classes[order(classes)]
     classification_status <- vector("character",length=length(plotting_details$data))
     classification_name <- vector("character",length=length(plotting_details$data))
     for(i in 1:length(plotting_details$data)) {     
