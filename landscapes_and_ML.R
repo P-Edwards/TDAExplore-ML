@@ -12,6 +12,7 @@ option_list <- list(optparse::make_option(c("--parameters"),type="character",hel
                     optparse::make_option(c("--upper"),type="numeric",default=1,help="Experimental. Maximum percentage distance from centroid for patches."),
                     optparse::make_option(c("--proportion"),type="numeric",default=.025,help="Experimental. Proportion of online pixels in each patch to sample."),
                     optparse::make_option(c("--pca"),type="character",default=FALSE,help="Experimental. Use PCA projection for summaries."),
+                    optparse::make_option(c("--rf"),type="character",default=FALSE,help="Experimental. Train random forest model."),
                     optparse::make_option(c("--folds"),type="numeric",default=5,help="Number of folds to use for cross-validaton. Default is 5."),
                     optparse::make_option(c("--fullsave"),type="character",default=FALSE,help="Debugging. If flag is set to TRUE then uses save.image at end. Default FALSE."),
                     optparse::make_option(c("--benchmark"),type="character",default=FALSE,help="Debugging. If TRUE, uses a fork based cluster type for benchmarking. Does not work on Windows."))
@@ -28,13 +29,13 @@ replace_falsy_with_false <- function(flag_to_check) {
   return(TRUE)
 }
 
-options_to_falsify <- c("svm","landscapes","plot","fullsave","benchmark","pca")
+options_to_falsify <- c("svm","landscapes","plot","fullsave","benchmark","pca","rf")
 for(command_line_option in options_to_falsify) { 
   opt[command_line_option]  <- replace_falsy_with_false(opt[command_line_option])
 }
 
 if(opt$landscapes!=FALSE) { 
-  training_results <- TDAExplore::TDAExplore(parameters=opt$parameters,number_of_cores=opt$cores,radius_of_patches=opt$radius,patch_ratio=opt$ratio,svm=opt$svm,lower=opt$lower,upper=opt$upper,proportion=opt$proportion,verbose=TRUE,benchmark=opt$benchmark,pca=opt$pca,folds=opt$folds)  
+  training_results <- TDAExplore::TDAExplore(parameters=opt$parameters,number_of_cores=opt$cores,radius_of_patches=opt$radius,patch_ratio=opt$ratio,svm=opt$svm,randforest=opt$rf,lower=opt$lower,upper=opt$upper,proportion=opt$proportion,verbose=TRUE,benchmark=opt$benchmark,pca=opt$pca,number_of_folds=opt$folds)  
   save(training_results,version=2,file=file.path(training_results$data_results_directory,paste(training_results$data_name_stem,".RData",sep="")))
 }
 
