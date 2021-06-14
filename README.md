@@ -19,13 +19,13 @@ External requirements
 
 Installation
 ---------------------------
-Install TDAExplore-ML using the included script install.R. From the command line, make sure that this package's root directory is the working directory (using `getwd()`  and `setwd()` in R). Then run:
+Install TDAExplore-ML using the included script `install.R`. If installing from the command line R interpreter, make sure that this package's root directory is the working directory (using `getwd()`  and `setwd()` in R). Then run:
 
 ``` sh
 	R
 	> source("install.R")    
 ```
-Similarly, from RStudio, check that the working directory is this package's root directory. Then run:
+Alternatively, from RStudio, check that the working directory is this package's root directory. Then run in the following command in the console:
 
 ```R
 source("install.R")
@@ -40,7 +40,7 @@ On Linux several of the R package dependencies of TDAExplore-ML require that you
 
 Usage
 ------
-The package includes two command line applications: `ml-tda` and `convolve-tda`. On Windows these are batch scripts. For both, pass with the `--help` flag to see a listing of command line flags. The applications require a `.csv` parameters file with path indicated by `.csv`. A template is provided that you can copy, rename, edit, etc. 
+The package includes two command line applications: `ml-tda` and `convolve-tda`. On Windows these are batch scripts `ml-tda.bat` and `convolve-tda.bat`. For both, pass the `--help` flag to see a listing of command line flags. The applications require a `.csv` parameters file with path indicated by `--parameters`. A template is provided that you can copy, rename, edit, etc. 
 
 
 ```sh
